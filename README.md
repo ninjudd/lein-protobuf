@@ -14,6 +14,8 @@ file:
 Replace `"0.1.1"` with the actual latest version, which you can find on
 [clojars](http://clojars.org/lein-protobuf).
 
+### proto-path
+
 By default, lein-protobuf looks for `.proto` files in `resources/proto` in your project
 directory. This was chosen as the default location so that `.proto` files would also be included in
 your jar files. You can change this with:
