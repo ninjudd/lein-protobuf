@@ -1,0 +1,16 @@
+.lein-deps-sum
+.lein-failures
+*~
+lib
+classes
+build
+pom.xml
+*.jar
+*.class
+docs
+protobuf-*
+protosrc
+.classpath
+.project
+.settings
+target/
