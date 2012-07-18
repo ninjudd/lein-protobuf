@@ -147,8 +147,8 @@
 (defn compile
   "Compile protocol buffer files located in proto dir."
   ([project]
-     (apply compile project (proto-files (proto-path project))))
-  ([project & files]
+     (compile project (proto-files (proto-path project))))
+  ([project files]
      (build-protoc project)
      (when (and (= "protobuf" (:name project)))
        (compile-google-protobuf project))
@@ -163,4 +163,6 @@
 (defn protobuf
   "Task for compiling protobuf libraries."
   [project & args]
-  (apply compile project args))
+  (if (seq args)
+    (compile project args)
+    (compile project)))
