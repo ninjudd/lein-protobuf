@@ -58,7 +58,7 @@
                 (.exists proto-file))
           (recur deps)
           (do (.mkdirs (.getParentFile proto-file))
-              (io/copy (io/reader (io/resource "proto" proto))
+              (io/copy (io/reader (io/resource (str "proto" proto)))
                        proto-file)
               (recur (concat deps (proto-dependencies proto-file)))))))))
 
