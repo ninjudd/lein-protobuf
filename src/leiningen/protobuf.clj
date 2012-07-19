@@ -3,7 +3,7 @@
   (:use [clojure.string :only [join]]
         [leiningen.help :only [help-for]]
         [leiningen.javac :only [javac]]
-        [leiningen.core.eval :only [get-os]]
+        [leiningen.core.eval :only [get-os eval-in-project]]
         [leiningen.core.user :only [leiningen-home]]
         [robert.hooke :only [add-hook]])
   (:require [clojure.java.io :as io]
@@ -35,32 +35,33 @@
 
 (def ^{:dynamic true} *compile?* true)
 
-
-
 (defn target [project]
   (doto (io/file (:target-path project))
     .mkdirs))
 
-(defn- proto-dependencies
-  "Look for lines starting with import in proto-file."
-  [proto-file]
-  (when (.exists proto-file)
-    (for [line (line-seq (io/reader proto-file)) :when (.startsWith line "import")]
-      (second (re-matches #".*\"(.*)\".*" line)))))
-
 (defn extract-dependencies
   "Extract all files proto depends on into dest."
-  [proto-path proto dest]
-  (loop [deps (proto-dependencies (io/file proto-path proto))]
-    (when-let [[dep & deps] (seq deps)]
-      (let [proto-file (io/file dest dep)]
-        (if (or (.exists (io/file proto-path dep))
-                (.exists proto-file))
-          (recur deps)
-          (do (.mkdirs (.getParentFile proto-file))
-              (io/copy (io/reader (io/resource (str "proto" proto)))
-                       proto-file)
-              (recur (concat deps (proto-dependencies proto-file)))))))))
+  [project proto-path protos dest]
+  (eval-in-project
+   project
+   (let [proto-dependencies (gensym "proto-dependencies")]
+     `(letfn [(~proto-dependencies [proto-file#]
+                (when (.exists proto-file#)
+                  (for [line# (line-seq (io/reader proto-file#)) :when (.startsWith line# "import")]
+                    (second (re-matches #".*\"(.*)\".*" line#)))))]
+        ~@(for [proto protos]
+            `(let [proto-path# ~(.getPath proto-path)]
+               (loop [deps# (~proto-dependencies (io/file proto-path# ~proto))]
+                 (when-let [[dep# & deps#] (seq deps#)]
+                   (let [proto-file# (io/file ~(.getPath dest) dep#)]
+                     (if (or (.exists (io/file proto-path# dep#))
+                             (.exists proto-file#))
+                       (recur deps#)
+                       (do (.mkdirs (.getParentFile proto-file#))
+                           (io/copy (io/reader (io/resource (str "proto/" dep#)))
+                                    proto-file#)
+                           (recur (concat deps# (~proto-dependencies proto-file#))))))))))))
+   '(require '[clojure.java.io :as io])))
 
 (defn modtime [dir]
   (let [files (->> dir io/file file-seq rest)]
@@ -117,8 +118,8 @@
        (when (or (> (modtime proto-path) (modtime dest))
                  (> (modtime proto-path) (modtime class-dest)))
          (.mkdirs dest)
+         (extract-dependencies project proto-path protos proto-dest)
          (doseq [proto protos]
-           (extract-dependencies proto-path proto proto-dest)
            (let [args (into [(.getPath (protoc project)) proto
                              (str "--java_out=" (.getAbsoluteFile dest)) "-I."]
                             (map #(str "-I" (.getAbsoluteFile %))
