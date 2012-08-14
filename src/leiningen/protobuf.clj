@@ -41,7 +41,7 @@
   "Extract all files proto depends on into dest."
   [project proto-path protos dest]
   (eval-in-project
-   project
+   (dissoc project :prep-tasks)
    (let [proto-dependencies (gensym "proto-dependencies")]
      `(letfn [(~proto-dependencies [proto-file#]
                 (when (.exists proto-file#)
