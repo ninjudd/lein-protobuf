@@ -9,7 +9,7 @@
             [conch.core :as sh]))
 
 (def cache (io/file (leiningen-home) "cache" "lein-protobuf"))
-(def default-version "2.3.0")
+(def default-version "2.4.1")
 
 (defn version [project]
   (or (:protobuf-version project) default-version))
