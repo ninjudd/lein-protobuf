@@ -31,7 +31,6 @@
   (io/file (get project :proto-path "resources/proto")))
 
 (def ^{:dynamic true} *compile-protobuf?* true)
-(def ^{:dynamic true} *compile-java?* true)
 
 (defn target [project]
   (doto (io/file (:target-path project))
@@ -117,8 +116,7 @@
                  (> (modtime proto-path) (modtime class-dest)))
          (binding [*compile-protobuf?* false]
            (.mkdirs dest)
-           (binding [*compile-java?* false]
-             (extract-dependencies project proto-path protos proto-dest))
+           (extract-dependencies project proto-path protos proto-dest)
            (doseq [proto protos]
              (let [args (into [(.getPath (protoc project)) proto
                                (str "--java_out=" (.getAbsoluteFile dest)) "-I."]
