@@ -5,6 +5,7 @@ lib
 classes
 build
 pom.xml
+pom.xml.asc
 *.jar
 *.class
 docs

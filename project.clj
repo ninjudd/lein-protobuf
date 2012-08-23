@@ -1,5 +1,5 @@
-(defproject lein-protobuf "0.1.1"
-  :description "Leiningen plugin for clojure-protobuf."
+(defproject lein-protobuf "0.2.0"
+  :description "Leiningen plugin for compiling protocol buffers."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "https://github.com/flatland/protobuf"
