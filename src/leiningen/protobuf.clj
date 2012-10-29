@@ -2,7 +2,8 @@
   (:use [clojure.string :only [join]]
         [leiningen.javac :only [javac]]
         [leiningen.core.eval :only [eval-in-project]]
-        [leiningen.core.user :only [leiningen-home]])
+        [leiningen.core.user :only [leiningen-home]]
+        [leiningen.core.main :only [abort]])
   (:require [clojure.java.io :as io]
             [fs.core :as fs]
             [fs.compression :as fs-zip]
@@ -125,7 +126,7 @@
                (println " > " (join " " args))
                (let [result (apply sh/proc (concat args [:dir proto-path]))]
                  (when-not (= (sh/exit-code result) 0)
-                   (println "ERROR: " (sh/stream-to-string result :err))))))
+                   (abort "ERROR:" (sh/stream-to-string result :err))))))
            (javac (assoc project :java-source-paths [(.getPath dest)])))))))
 
 (defn compile-google-protobuf
