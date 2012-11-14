@@ -1,7 +1,7 @@
 (ns leiningen.protobuf
   (:use [clojure.string :only [join]]
         [leiningen.javac :only [javac]]
-        [leiningen.core.eval :only [eval-in-project]]
+        [leiningen.core.eval :only [in-project]]
         [leiningen.core.user :only [leiningen-home]]
         [leiningen.core.main :only [abort]])
   (:require [clojure.java.io :as io]
@@ -40,26 +40,26 @@
 (defn extract-dependencies
   "Extract all files proto depends on into dest."
   [project proto-path protos dest]
-  (eval-in-project
-   (dissoc project :prep-tasks)
-   (let [proto-dependencies (gensym "proto-dependencies")]
-     `(letfn [(~proto-dependencies [proto-file#]
-                (when (.exists proto-file#)
-                  (for [line# (line-seq (io/reader proto-file#)) :when (.startsWith line# "import")]
-                    (second (re-matches #".*\"(.*)\".*" line#)))))]
-        ~@(for [proto protos]
-            `(let [proto-path# ~(.getPath proto-path)]
-               (loop [deps# (~proto-dependencies (io/file proto-path# ~proto))]
-                 (when-let [[dep# & deps#] (seq deps#)]
-                   (let [proto-file# (io/file ~(.getPath dest) dep#)]
-                     (if (or (.exists (io/file proto-path# dep#))
-                             (.exists proto-file#))
-                       (recur deps#)
-                       (do (.mkdirs (.getParentFile proto-file#))
-                           (io/copy (io/reader (io/resource (str "proto/" dep#)))
-                                    proto-file#)
-                             (recur (concat deps# (~proto-dependencies proto-file#))))))))))))
-   '(require '[clojure.java.io :as io])))
+  (in-project (dissoc project :prep-tasks)
+    [proto-path (.getPath proto-path)
+     dest (.getPath dest)
+     protos protos]
+    (ns (:require [clojure.java.io :as io]))
+    (letfn [(dependencies [proto-file]
+              (when (.exists proto-file)
+                (for [line (line-seq (io/reader proto-file))
+                      :when (.startsWith line "import")]
+                  (second (re-matches #".*\"(.*)\".*" line)))))]
+      (loop [deps (mapcat #(dependencies (io/file proto-path %)) protos)]
+        (when-let [[dep & deps] (seq deps)]
+          (let [proto-file (io/file dest dep)]
+            (if (or (.exists (io/file proto-path dep))
+                    (.exists proto-file))
+              (recur deps)
+              (do (.mkdirs (.getParentFile proto-file))
+                  (when-let [resource (io/resource (str "proto/" dep))]
+                    (io/copy (io/reader resource) proto-file))
+                  (recur (concat deps (dependencies proto-file)))))))))))
 
 (defn modtime [dir]
   (let [files (->> dir io/file file-seq rest)]
