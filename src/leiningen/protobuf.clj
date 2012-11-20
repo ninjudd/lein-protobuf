@@ -1,7 +1,7 @@
 (ns leiningen.protobuf
   (:use [clojure.string :only [join]]
         [leiningen.javac :only [javac]]
-        [leiningen.core.eval :only [in-project]]
+        [leinjacker.eval :only [in-project]]
         [leiningen.core.user :only [leiningen-home]]
         [leiningen.core.main :only [abort]])
   (:require [clojure.java.io :as io]
