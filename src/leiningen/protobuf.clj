@@ -129,7 +129,9 @@
                (let [result (apply sh/proc (concat args [:dir proto-path]))]
                  (when-not (= (sh/exit-code result) 0)
                    (abort "ERROR:" (sh/stream-to-string result :err))))))
-           (javac (assoc project :java-source-paths [(.getPath dest)])))))))
+           (javac (assoc project
+                    :java-source-paths [(.getPath dest)]
+                    :javac-options ["-Xlint:none"])))))))
 
 (defn compile-google-protobuf
   "Compile com.google.protobuf.*"
