@@ -61,8 +61,10 @@
                     (io/copy (io/reader resource) proto-file))
                   (recur (concat deps (dependencies proto-file)))))))))))
 
-(defn modtime [dir]
-  (let [files (->> dir io/file file-seq rest)]
+(defn modtime [f]
+  (let [files (if (fs/directory? f)
+                (->> f io/file file-seq rest)
+                [f])]
     (if (empty? files)
       0
       (apply max (map fs/mod-time files)))))
@@ -133,14 +135,14 @@
   "Compile com.google.protobuf.*"
   [project]
   (fetch project)
-  (let [descriptor (io/file (proto-path project) "google" "protobuf" "descriptor.proto")
-        srcdir     (srcdir project)]
-    (when-not (.exists descriptor)
-      (.mkdirs (.getParentFile descriptor))
-      (io/copy (io/file srcdir "src/google/protobuf/descriptor.proto")
-               descriptor))
-    (compile-protobuf project
-                      ["google/protobuf/descriptor.proto"]
+  (let [srcdir (srcdir project)
+        descriptor "google/protobuf/descriptor.proto"
+        src (io/file srcdir "src" descriptor)
+        dest (io/file (proto-path project) descriptor)]
+    (.mkdirs (.getParentFile dest))
+    (when (> (modtime src) (modtime dest))
+      (io/copy src dest))
+    (compile-protobuf project [descriptor]
                       (io/file srcdir "java" "src" "main" "java"))))
 
 (defn protobuf
