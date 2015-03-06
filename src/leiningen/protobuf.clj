@@ -10,7 +10,7 @@
             [conch.core :as sh]))
 
 (def cache (io/file (leiningen-home) "cache" "lein-protobuf"))
-(def default-version "2.5.0")
+(def default-version "2.6.1")
 
 (defn version [project]
   (or (:protobuf-version project) default-version))
@@ -26,7 +26,9 @@
 
 (defn url [project]
   (java.net.URL.
-   (format "http://protobuf.googlecode.com/files/protobuf-%s.zip" (version project))))
+   (format "https://github.com/google/protobuf/releases/download/v%s/protobuf-%s.zip"
+     (version project)
+     (version project))))
 
 (defn proto-path [project]
   (io/file (get project :proto-path "resources/proto")))
