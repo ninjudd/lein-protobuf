@@ -120,6 +120,9 @@
        (when (or (> (modtime proto-path) (modtime dest))
                  (> (modtime proto-path) (modtime class-dest)))
          (binding [*compile-protobuf?* false]
+           (fs/mkdirs target)
+           (fs/mkdirs class-dest)
+           (fs/mkdirs proto-dest)
            (.mkdirs dest)
            (extract-dependencies project proto-path protos proto-dest)
            (doseq [proto protos]
@@ -131,9 +134,9 @@
                (let [result (apply sh/proc (concat args [:dir proto-path]))]
                  (when-not (= (sh/exit-code result) 0)
                    (abort "ERROR:" (sh/stream-to-string result :err))))))
-           (javac (assoc project
-                    :java-source-paths [(.getPath dest)]
-                    :javac-options ["-Xlint:none"])))))))
+           (javac (-> project
+                      (update-in [:java-source-paths] concat [(.getPath dest)])
+                      (update-in [:javac-options] concat ["-Xlint:none"]))))))))
 
 (defn compile-google-protobuf
   "Compile com.google.protobuf.*"
