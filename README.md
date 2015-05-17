@@ -39,3 +39,7 @@ before that task runs. So if you like, you can simply run:
 
 If you have any questions or need help, you can find us on IRC in
 [#flatland](irc://irc.freenode.net/#flatland).
+
+## License
+
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
