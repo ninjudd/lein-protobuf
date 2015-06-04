@@ -10,7 +10,7 @@
             [conch.core :as sh]))
 
 (def cache (io/file (leiningen-home) "cache" "lein-protobuf"))
-(def default-version "2.5.0")
+(def default-version "2.6.1")
 
 (defn version [project]
   (or (:protobuf-version project) default-version))
@@ -26,7 +26,9 @@
 
 (defn url [project]
   (java.net.URL.
-   (format "http://protobuf.googlecode.com/files/protobuf-%s.zip" (version project))))
+   (format "https://github.com/google/protobuf/releases/download/v%s/protobuf-%s.zip"
+     (version project)
+     (version project))))
 
 (defn proto-path [project]
   (io/file (get project :proto-path "resources/proto")))
@@ -118,6 +120,9 @@
        (when (or (> (modtime proto-path) (modtime dest))
                  (> (modtime proto-path) (modtime class-dest)))
          (binding [*compile-protobuf?* false]
+           (fs/mkdirs target)
+           (fs/mkdirs class-dest)
+           (fs/mkdirs proto-dest)
            (.mkdirs dest)
            (extract-dependencies project proto-path protos proto-dest)
            (doseq [proto protos]
@@ -129,9 +134,9 @@
                (let [result (apply sh/proc (concat args [:dir proto-path]))]
                  (when-not (= (sh/exit-code result) 0)
                    (abort "ERROR:" (sh/stream-to-string result :err))))))
-           (javac (assoc project
-                    :java-source-paths [(.getPath dest)]
-                    :javac-options ["-Xlint:none"])))))))
+           (javac (-> project
+                      (update-in [:java-source-paths] concat [(.getPath dest)])
+                      (update-in [:javac-options] concat ["-Xlint:none"]))))))))
 
 (defn compile-google-protobuf
   "Compile com.google.protobuf.*"
