@@ -7,9 +7,9 @@ is a Clojure wrapper around the Java protobuf API.
 
 Add the following to your `project.clj` file:
 
-    :plugins [[lein-protobuf "0.4.2"]]
+    :plugins [[lein-protobuf "0.4.3"]]
 
-Replace `"0.4.2"` with the actual latest version, which you can find at http://clojars.org/lein-protobuf.
+Replace `"0.4.3"` with the actual latest version, which you can find at http://clojars.org/lein-protobuf.
 
 *Note: lein-protobuf requires at least version 2.0 of Leiningen.*
 
