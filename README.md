@@ -21,6 +21,10 @@ your jar files. You can change this with:
 
     :proto-path "path/to/proto"
 
+You can specify custom protoc executable with:
+
+    :protoc "/usr/local/bin/protoc260"
+
 To compile all `.proto` files in this directory, just run:
 
     lein protobuf
