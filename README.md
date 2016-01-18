@@ -11,6 +11,10 @@ Add the following to your `project.clj` file:
 
 Replace `"0.4.3"` with the actual latest version, which you can find at http://clojars.org/lein-protobuf.
 
+Also, you should add the version of the protobuf library to your dependencies in `project.clj` corresponding to the version of `protoc` being used:
+
+    :dependencies [[com.google.protobuf/protobuf-java "2.6.1"]]
+
 *Note: lein-protobuf requires at least version 2.0 of Leiningen.*
 
 ## Usage
