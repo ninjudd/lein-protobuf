@@ -34,6 +34,12 @@ before that task runs. So if you like, you can simply run:
 
     lein compile
 
+## Protoc versions
+
+Protoc version | lein-protobuf version
+---------------|----------------------
+2.6.1          | 0.4.3
+2.5.0          | 0.4.0
 
 ## Getting Help
 
