@@ -101,9 +101,10 @@
         protoc (protoc project)]
     (when-not (.exists protoc)
       (fetch project)
-      (fs/chmod "+x" (io/file srcdir "configure"))
-      (fs/chmod "+x" (io/file srcdir "install-sh"))
+      (fs/chmod "+x" (io/file srcdir "autogen.sh"))
+      (sh/stream-to-out (sh/proc "./autogen.sh" :dir srcdir) :out)
       (println "Configuring protoc")
+      (fs/chmod "+x" (io/file srcdir "configure"))
       (sh/stream-to-out (sh/proc "./configure" :dir srcdir) :out)
       (println "Running 'make'")
       (sh/stream-to-out (sh/proc "make" :dir srcdir) :out))))
