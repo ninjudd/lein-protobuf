@@ -122,7 +122,7 @@
            class-dest (io/file target "classes")
            proto-dest (io/file target "proto")
            proto-path (proto-path project)
-           protoc (or (protoc project) (.getPath (protoc project)))]
+           protoc (or (protoc project) proto-path)]
        (when (or (> (modtime proto-path) (modtime dest))
                  (> (modtime proto-path) (modtime class-dest)))
          (binding [*compile-protobuf?* false]
