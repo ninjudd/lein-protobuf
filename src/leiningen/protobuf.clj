@@ -109,6 +109,10 @@
       (println "Running 'make'")
       (sh/stream-to-out (sh/proc "make" :dir srcdir) :out))))
 
+(defn protoc [project]
+  "Get :protoc argument from project."
+  (:protoc project))
+
 (defn compile-protobuf
   "Create .java and .class files from the provided .proto files."
   ([project protos]
@@ -117,7 +121,8 @@
      (let [target     (target project)
            class-dest (io/file target "classes")
            proto-dest (io/file target "proto")
-           proto-path (proto-path project)]
+           proto-path (proto-path project)
+           protoc (or (protoc project) (.getPath (protoc project)))]
        (when (or (> (modtime proto-path) (modtime dest))
                  (> (modtime proto-path) (modtime class-dest)))
          (binding [*compile-protobuf?* false]
@@ -127,7 +132,7 @@
            (.mkdirs dest)
            (extract-dependencies project proto-path protos proto-dest)
            (doseq [proto protos]
-             (let [args (into [(.getPath (protoc project)) proto
+             (let [args (into [protoc proto
                                (str "--java_out=" (.getAbsoluteFile dest)) "-I."]
                               (map #(str "-I" (.getAbsoluteFile %))
                                    [proto-dest proto-path]))]
@@ -157,8 +162,10 @@
   "Task for compiling protobuf libraries."
   [project & files]
   (let [files (or (seq files)
-                  (proto-files (proto-path project)))]
-    (build-protoc project)
+                  (proto-files (proto-path project)))
+        protoc (protoc project)]
+    (when-not protoc
+      (build-protoc project))
     (when (and (= "protobuf" (:name project)))
       (compile-google-protobuf project))
     (compile-protobuf project files)))
