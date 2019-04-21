@@ -21,7 +21,7 @@
 (defn srcdir [project]
   (io/file cache (str "protobuf-" (version project))))
 
-(defn protoc [project]
+(defn srcprotoc [project]
   (io/file (srcdir project) "src" "protoc"))
 
 (defn url [project]
@@ -98,7 +98,7 @@
   "Compile protoc from source."
   [project]
   (let [srcdir (srcdir project)
-        protoc (protoc project)]
+        protoc (srcprotoc project)]
     (when-not (.exists protoc)
       (fetch project)
       (fs/chmod "+x" (io/file srcdir "autogen.sh"))
@@ -109,9 +109,15 @@
       (println "Running 'make'")
       (sh/stream-to-out (sh/proc "make" :dir srcdir) :out))))
 
-(defn protoc [project]
-  "Get :protoc argument from project."
-  (:protoc project))
+(defn protoc
+  "Get protoc from
+   1. :protoc argument from project.
+   2. $PATH enviroment"
+  [project]
+  (or (:protoc project)
+      (let [abs-protoc-path (sh/stream-to-string (sh/proc "command" "-v" "protoc") :out)]
+        (when-not (= abs-protoc-path "")
+          (.trim abs-protoc-path)))))
 
 (defn compile-protobuf
   "Create .java and .class files from the provided .proto files."
@@ -166,6 +172,6 @@
         protoc (protoc project)]
     (when-not protoc
       (build-protoc project))
-    (when (and (= "protobuf" (:name project)))
+    (when (= "protobuf" (:name project))
       (compile-google-protobuf project))
     (compile-protobuf project files)))
